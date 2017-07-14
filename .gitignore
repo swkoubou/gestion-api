@@ -33,4 +33,4 @@ local_settings.py
 venv/
 
 # this project only
-/gestion/gestion/config/*.cnf
+/gestion/config/*.cnf
