@@ -1,5 +1,0 @@
-[client]
-database = gestion
-user = NAME
-password = PASSWORD
-default-character-set = utf8
