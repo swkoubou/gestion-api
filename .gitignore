@@ -34,3 +34,4 @@ venv/
 
 # this project only
 /gestion/config/*.cnf
+*.db
