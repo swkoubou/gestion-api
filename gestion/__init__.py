@@ -25,37 +25,37 @@ def hello():
 ##### エラーレスポンス (JSON化) ###
 @app.errorhandler(400)
 def bad_request(err):
-    return jsonify(message=err.description)
+    return jsonify(code=err.code, message=err.description)
 
 
 @app.errorhandler(401)
 def unauthorize(err):
-    return jsonify(message=err.description)
+    return jsonify(code=err.code, message=err.description)
 
 
 @app.errorhandler(403)
 def forbidden(err):
-    return jsonify(message=err.description)
+    return jsonify(code=err.code, message=err.description)
 
 
 @app.errorhandler(404)
 def not_found(err):
-    return jsonify(message=err.description)
+    return jsonify(code=err.code, message=err.description)
 
 
 @app.errorhandler(405)
 def method_not_allowed(err):
-    return jsonify(message=err.description)
+    return jsonify(code=err.code, message=err.description)
 
 
 @app.errorhandler(409)
 def conflict(err):
-    return jsonify(message=err.description)
+    return jsonify(code=err.code, message=err.description)
 
 
 @app.errorhandler(500)
 def internal_server_error(err):
-    return jsonify(message=err.description)
+    return jsonify(code=err.code, message=err.description)
 
 
 app.add_url_rule('/groups', view_func=Group.as_view('groups'), methods=['POST',])
