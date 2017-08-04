@@ -1,6 +1,6 @@
 from flask import Flask, jsonify
 from gestion.database import session, init_database
-from gestion.views import Group
+from gestion.views import GroupList
 
 
 app = Flask(__name__)
@@ -58,4 +58,4 @@ def internal_server_error(err):
     return jsonify(code=err.code, message=err.description)
 
 
-app.add_url_rule('/groups', view_func=Group.as_view('groups'), methods=['POST',])
+app.add_url_rule('/groups', view_func=GroupList.as_view('groups'), methods=['POST',])
