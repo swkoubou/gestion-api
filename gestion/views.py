@@ -55,14 +55,16 @@ class GroupAPI(MethodView):
     def get(self, group_name):
         """グループ情報の取得."""
         group = ss.query(Group).filter(Group.name==group_name).first()
+        if group is None: abort(404)
         return jsonify(id=group.id, name=group.name)
 
     def put(self, group_name):
         """グループ情報の変更."""
         ### Need Admin ###
+        group = ss.query(Group).filter(Group.name==group_name).first()
+        if group is None: abort(404)
         query = ss.query(Group).filter_by(name=rq.form['name'])
         if query.count() > 0: abort(409, 'そのグループ名は既に使われています')
-        group = ss.query(Group).filter(Group.name==group_name).first()
         group.name = rq.form['name']
         ss.commit()
         return jsonify(id=group.id, name=group.name)
@@ -71,5 +73,7 @@ class GroupAPI(MethodView):
         """グループの削除."""
         ### Need Admin ###
         group = ss.query(Group).filter(Group.name==group_name).first()
+        if group is None: abort(404)
         ss.delete(group)
+        ss.commit()
         return jsonify(message='Good Bye!')
