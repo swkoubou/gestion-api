@@ -25,10 +25,13 @@ class User(Base):
     last_name = Column(String(30), nullable=False)
     gender = Column(String(5), nullable=False)
     password = Column(String(100), nullable=False)
+    token = Column(String(100), nullable=False, unique=True)
+    fitbit_id = Column(String(10), nullable=False, unique=True)
+    fitbit_access_token = Column(String(1000), nullable=False)
+    fitbit_refresh_token = Column(String(1000), nullable=False)
     group_id = Column(Integer, ForeignKey('groups.id'))
+    permission_id = Column(Integer, ForeignKey('permissions.id'))
 
-    fitbit_accounts = relation('FitbitAccount', backref='fitbit_accounts')
-    access_tokens = relation('AccessToken', backref='access_tokens')
     stress_data = relation('Stress', backref='stress_data')
     attendance_records = relation('AttendanceRecord', backref='attendance_records')
 
@@ -36,29 +39,14 @@ class User(Base):
         return f'<User (id:{self.id} name:{self.email})>'
 
 
-class FitbitAccount(Base):
-    __tablename__ = 'fitbit_accounts'
+class Permission(Base):
+    __tablename__ = 'permissions'
 
     id = Column(Integer, primary_key=True)
-    fitbit_id = Column(String(10), nullable=False, unique=True)
-    access_token = Column(String(1000), nullable=False)
-    refresh_token = Column(String(1000), nullable=False)
-    owner_id = Column(Integer, ForeignKey('users.id'))
+    name = Column(String(10), nullable=False)
 
     def __repr__(self):
-        return f'<FitbitAccount (id:{self.id} name:{self.fitbit_id})>'
-
-
-class AccessToken(Base):
-    __tablename__ = 'access_tokens'
-
-    id = Column(Integer, primary_key=True)
-    is_active = Column(Boolean, nullable=False)
-    token = Column(String(100), nullable=False, unique=True)
-    owner_id = Column(Integer, ForeignKey('users.id'))
-
-    def __repr__(self):
-        return f'<AccessToken (id:{self.id} active?:{self.is_active} token:{self.token})>'
+        return f'<Permission (id:{self.id} name:{self.name})>'
 
 
 class Stress(Base):
