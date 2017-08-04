@@ -1,15 +1,15 @@
 from flask import Flask, jsonify
 from gestion.database import session, init_database
-from gestion.views import GroupList
+from gestion.views import GroupListAPI, GroupAPI
 
 
 app = Flask(__name__)
 
 
-@app.cli.command
+@app.cli.command()
 def initdb():
     """DB初期化コマンド."""
-    init_db()
+    init_database()
 
 
 @app.teardown_appcontext
@@ -22,7 +22,7 @@ def shutdown_session(exception=None):
 def hello():
     return "Hello, Gestion!"
 
-##### エラーレスポンス (JSON化) ###
+##### エラーレスポンス (JSON化) #####
 @app.errorhandler(400)
 def bad_request(err):
     return jsonify(code=err.code, message=err.description)
@@ -58,4 +58,10 @@ def internal_server_error(err):
     return jsonify(code=err.code, message=err.description)
 
 
-app.add_url_rule('/groups', view_func=GroupList.as_view('groups'), methods=['POST',])
+##### APIルーティング #####
+app.add_url_rule('/groups', 
+                 view_func=GroupListAPI.as_view('group_list'),
+                 methods=['GET', 'POST',])
+app.add_url_rule('/groups/<group_name>', 
+                 view_func=GroupAPI.as_view('groups'),
+                 methods=['GET', 'PUT', 'DELETE'])
