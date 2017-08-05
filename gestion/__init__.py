@@ -1,6 +1,8 @@
 from flask import Flask, jsonify
 from gestion.database import session, init_database
-from gestion.views import GroupListAPI, GroupAPI
+from gestion.views import (
+    AuthorizeSigninAPI, AuthorizeSignoutAPI, GroupListAPI, GroupAPI
+)
 
 
 app = Flask(__name__)
@@ -59,6 +61,12 @@ def internal_server_error(err):
 
 
 ##### APIルーティング #####
+app.add_url_rule('/authorize/signin',
+                 view_func=AuthorizeSigninAPI.as_view('signin'),
+                 methods=['POST'])
+app.add_url_rule('/authorize/signout',
+                 view_func=AuthorizeSignoutAPI.as_view('signout'),
+                 methods=['POST'])
 app.add_url_rule('/groups', 
                  view_func=GroupListAPI.as_view('group_list'),
                  methods=['GET', 'POST',])
