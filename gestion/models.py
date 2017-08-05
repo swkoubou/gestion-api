@@ -26,7 +26,7 @@ class User(Base):
     gender = Column(String(10), nullable=False)
     password = Column(String(200), nullable=False)
     token = Column(String(200), nullable=False, unique=True)
-    fitbit_id = Column(String(50), nullable=False, unique=True)
+    fitbit_id = Column(String(50), nullable=False)
     fitbit_access_token = Column(String(200), nullable=False)
     fitbit_refresh_token = Column(String(200), nullable=False)
     group_id = Column(Integer, ForeignKey('groups.id'))
