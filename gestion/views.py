@@ -113,9 +113,13 @@ class GroupAPI(MethodView):
 
     def put(self, group_name):
         """グループ情報の変更."""
-        ### Need Admin ###
-        group = ss.query(Group).filter(Group.name==group_name).first()
+        user = check_authorize()
+        group = ss.query(Group).filter_by(name=group_name).first() # URLのグループ
+        admin = ss.query(Permission).filter_by(name='admin').first() # 管理者か
+        if user.group_id != group.id or user.permission_id != admin.id:
+            abort(403) 
         if group is None: abort(404)
+        if 'name' not in rq.form: abort(400)
         query = ss.query(Group).filter_by(name=rq.form['name'])
         if query.count() > 0: abort(409, 'そのグループ名は既に使われています')
         group.name = rq.form['name']
@@ -124,7 +128,12 @@ class GroupAPI(MethodView):
 
     def delete(self, group_name):
         """グループの削除."""
-        ### Need Admin ###
+        user = check_authorize()
+        group = ss.query(Group).filter_by(name=group_name).first() # URLのグループ
+        admin = ss.query(Permission).filter_by(name='admin').first() # 管理者か
+        if user.group_id != group.id or user.permission_id != admin.id:
+            abort(403) 
+        if group is None: abort(404)
         group = ss.query(Group).filter(Group.name==group_name).first()
         if group is None: abort(404)
         ss.delete(group)
