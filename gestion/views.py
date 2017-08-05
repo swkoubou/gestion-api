@@ -4,7 +4,57 @@ from flask.views import MethodView
 from werkzeug.security import generate_password_hash, check_password_hash
 from gestion.models import Group, User, Permission
 from gestion.database import session as ss
-from gestion.utils import generate_token
+from gestion.utils import Token
+
+
+def check_authorize():
+    """アクセストークンを調べて正しいユーザか確認する."""
+    try:
+        # ヘッダ形式はRFC6750参照
+        authorization = rq.headers['Authorization']
+        scheme, access_token = authorization.split()
+        if scheme != 'Bearer': raise Exception # Bearerスキームの確認
+        t = Token(access_token)
+    except:
+        abort(400, '正しいAuthorizationヘッダが必要です')
+
+    # トークンの照合
+    user = ss.query(User).filter_by(id=t.user_id, group_id=t.group_id).first()
+    if user.token != access_token:
+        abort(401, '認証に失敗しました')
+    else:
+        return user
+
+
+class AuthorizeSigninAPI(MethodView):
+    """サインイン."""
+    def post(self):
+        if set(rq.form) != {'group_name', 'email', 'password'}: abort(400)
+        user = ss.query(User).filter_by(email=rq.form['email']).first()
+        if user is None: abort(404)
+        if not check_password_hash(user.password, rq.form['password']):
+            abort(401)
+        return jsonify({
+            'id': user.id, 'email': user.email,
+            'first_name': user.first_name, 'last_name': user.last_name,
+            'gender': user.gender, 'access_token': user.token,
+            'group_id': user.group_id, 'fitbit': {
+                'fitbit_id': user.fitbit_id,
+                'access_token': user.fitbit_access_token,
+                'refresh_token': user.fitbit_refresh_token,
+            }
+        })
+
+
+class AuthorizeSignoutAPI(MethodView):
+    """サインアウト."""
+    def post(self):
+        user = check_authorize()
+        token = Token(user.token)
+        token.update()
+        user.token = token.tokenize()
+        ss.commit()
+        return jsonify(message='See you again!')
 
 
 class GroupListAPI(MethodView):
@@ -30,10 +80,13 @@ class GroupListAPI(MethodView):
         admin = User(email=rq.form['email'], first_name=rq.form['first_name'],
                      last_name=rq.form['last_name'], gender=rq.form['gender'],
                      password=generate_password_hash(rq.form['password']),
-                     token=generate_token(),
+                     # user_idが決まらないとアクセストークンが作れないのでダミーを入れる
+                     token=Token.generate(0, 0),
                      fitbit_id='', fitbit_access_token='', fitbit_refresh_token='',
                      permission_id=permission.id, group_id=group.id)
         ss.add(admin)
+        ss.commit()
+        admin.token = Token.generate(admin.id, admin.group_id)
         ss.commit()
         return jsonify({
             'group': {'id': group.id, 'name': group.name},
