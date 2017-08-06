@@ -7,23 +7,44 @@ from gestion.database import session as ss
 from gestion.utils import Token
 
 
+def parse_authorize_header():
+    # ヘッダ形式はRFC6750参照
+    authorization = rq.headers['Authorization']
+    scheme, access_token = authorization.split()
+    if scheme != 'Bearer': raise Exception # Bearerスキームの確認
+    t = Token(access_token)
+    return t.group_id, t.user_id, access_token
+
+
 def check_authorize():
     """アクセストークンを調べて正しいユーザか確認する."""
     try:
-        # ヘッダ形式はRFC6750参照
-        authorization = rq.headers['Authorization']
-        scheme, access_token = authorization.split()
-        if scheme != 'Bearer': raise Exception # Bearerスキームの確認
-        t = Token(access_token)
+        group_id, user_id, access_token = parse_authorize_header()
     except:
         abort(400, '正しいAuthorizationヘッダが必要です')
 
     # トークンの照合
-    user = ss.query(User).filter_by(id=t.user_id, group_id=t.group_id).first()
+    user = ss.query(User).filter_by(id=user_id, group_id=group_id).first()
     if user.token != access_token:
         abort(401, '認証に失敗しました')
     else:
         return user
+
+
+def check_authorize_admin():
+    """アクセストークンを調べて正しい管理ユーザか確認する."""
+    try:
+        group_id, user_id ,access_token = parse_authorize_header()
+    except:
+        abort(400, '正しいAuthorizationヘッダが必要です')
+
+    # トークンの照合
+    admin = ss.query(User).filter_by(id=user_id, group_id=group_id).first()
+    permission = ss.query(Permission).filter(Permission.name=='admin').first()
+    if admin.token != access_token or admin.permission_id != permission.id:
+        abort(401, '認証に失敗しました')
+    else:
+        return admin
 
 
 class AuthorizeSigninAPI(MethodView):
@@ -162,7 +183,31 @@ class UserListAPI(MethodView):
     
     def post(self):
         """ユーザの追加."""
-        pass
+        admin = check_authorize_admin()
+        if set(rq.form) != {'email', 'first_name', 'last_name',
+                            'gender', 'password'}: abort(400)
+        query = ss.query(User).filter_by(email=rq.form['email'])
+        if query.count() > 0: abort(409, 'そのメールアドレスは既に使われています')
+        permission = ss.query(Permission).filter(Permission.name=='user').first()
+        new_user = User(email=rq.form['email'], first_name=rq.form['first_name'],
+                        last_name=rq.form['last_name'], gender=rq.form['gender'],
+                        password=generate_password_hash(rq.form['password']),
+                        # user_idが決まらないとアクセストークンが作れないのでダミーを入れる
+                        token=Token.generate(0, 0),
+                        fitbit_id='', fitbit_access_token='', fitbit_refresh_token='',
+                        permission_id=permission.id, group_id=admin.group_id)
+        ss.add(new_user)
+        ss.commit()
+        new_user.token = Token.generate(new_user.id, new_user.group_id)
+        ss.commit()
+        # commit()後一度オブジェクトを参照しないとvars()で表示できない??
+        print('add', new_user.first_name)
+        new_user = vars(new_user)
+        del new_user['_sa_instance_state']
+        del new_user['password']
+        del new_user['permission_id']
+        del new_user['token']
+        return jsonify(new_user)
 
 
 class UserMeAPI(MethodView):
@@ -192,4 +237,9 @@ class UserAPI(MethodView):
 
     def delete(self, user_id):
         """ユーザの削除."""
-        pass
+        admin = check_authorize_admin()
+        user = ss.query(User).filter_by(id=user_id, group_id=admin.group_id).first()
+        if user is None: abort(404)
+        ss.delete(user)
+        ss.commit()
+        return jsonify(message='Good Bye!')
