@@ -289,3 +289,15 @@ class StressMeAPI(MethodView):
         stress_data = [{'value': s.stress, 'date': s.date.isoformat()}
                        for s in ss.query(Stress).filter_by(owner_id=user.id)]
         return jsonify(stress_data)
+
+
+class StressAPI(MethodView):
+    """/users/<int:user_id>/stress"""
+    def get(self, user_id):
+        """ストレス値一覧の取得."""
+        admin = check_authorize_admin()
+        user = ss.query(User).filter_by(id=user_id, group_id=admin.group_id).first()
+        if user is None: abort(404)
+        stress_data = [{'value': s.stress, 'date': s.date.isoformat()}
+                       for s in ss.query(Stress).filter_by(owner_id=user.id)]
+        return jsonify(stress_data)

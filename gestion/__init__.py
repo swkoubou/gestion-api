@@ -4,7 +4,7 @@ from gestion.views import (
     AuthorizeSigninAPI, AuthorizeSignoutAPI,
     GroupListAPI, GroupAPI,
     UserMeAPI, UserListAPI, UserAPI,
-    StressMeAPI,
+    StressMeAPI, StressAPI,
 )
 
 
@@ -70,21 +70,24 @@ app.add_url_rule('/authorize/signin',
 app.add_url_rule('/authorize/signout',
                  view_func=AuthorizeSignoutAPI.as_view('signout'),
                  methods=['POST'])
-app.add_url_rule('/groups', 
+app.add_url_rule('/groups',
                  view_func=GroupListAPI.as_view('group_list'),
                  methods=['GET', 'POST',])
-app.add_url_rule('/groups/<group_name>', 
+app.add_url_rule('/groups/<group_name>',
                  view_func=GroupAPI.as_view('groups'),
                  methods=['GET', 'PUT', 'DELETE'])
-app.add_url_rule('/users', 
+app.add_url_rule('/users',
                  view_func=UserListAPI.as_view('users'),
                  methods=['GET', 'POST'])
-app.add_url_rule('/users/me', 
+app.add_url_rule('/users/me',
                  view_func=UserMeAPI.as_view('users_me'),
                  methods=['GET', 'PUT', 'DELETE'])
-app.add_url_rule('/users/<int:user_id>', 
+app.add_url_rule('/users/<int:user_id>',
                  view_func=UserAPI.as_view('users_list'),
                  methods=['GET', 'PUT', 'DELETE'])
-app.add_url_rule('/users/me/stress', 
+app.add_url_rule('/users/me/stress',
                  view_func=StressMeAPI.as_view('stress_me'),
+                 methods=['GET',])
+app.add_url_rule('/users/<int:user_id>/stress',
+                 view_func=StressAPI.as_view('stress'),
                  methods=['GET',])
