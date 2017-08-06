@@ -1,11 +1,9 @@
 from flask import Flask, jsonify
 from gestion.database import session, init_database
-from gestion.views import (
-    AuthorizeSigninAPI, AuthorizeSignoutAPI,
-    GroupListAPI, GroupAPI,
-    UserMeAPI, UserListAPI, UserAPI,
-    StressMeAPI, StressAPI,
-)
+from gestion.views.authorize import AuthorizeSigninAPI, AuthorizeSignoutAPI
+from gestion.views.groups import GroupAPI, GroupListAPI
+from gestion.views.users import UserAPI, UserListAPI, UserMeAPI
+from gestion.views.stress import StressAPI, StressMeAPI
 
 
 app = Flask(__name__)
