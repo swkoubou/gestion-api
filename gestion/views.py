@@ -2,7 +2,7 @@ from flask import request as rq
 from flask import abort, jsonify
 from flask.views import MethodView
 from werkzeug.security import generate_password_hash, check_password_hash
-from gestion.models import Group, User, Permission
+from gestion.models import Group, User, Permission, Stress
 from gestion.database import session as ss
 from gestion.utils import Token
 
@@ -107,13 +107,15 @@ class GroupListAPI(MethodView):
         ss.commit()
         admin.token = Token.generate(admin.id, admin.group_id)
         ss.commit()
-        user = vars(user)
-        del user['_sa_instance_state']
-        del user['permission_id']
-        del user['password']
+        # commit()後一度オブジェクトを参照しないとvars()で表示できない??
+        print('add', admin.first_name)
+        admin = vars(admin)
+        del admin['_sa_instance_state']
+        del admin['permission_id']
+        del admin['password']
         return jsonify({
             'group': {'id': group.id, 'name': group.name},
-            'user': user,
+            'admin': admin,
             })
 
 
@@ -277,3 +279,13 @@ class UserAPI(MethodView):
         ss.delete(user)
         ss.commit()
         return jsonify(message='Good Bye!')
+
+
+class StressMeAPI(MethodView):
+    """/users/me/stress"""
+    def get(self):
+        """自分のストレス値一覧の取得."""
+        user = check_authorize()
+        stress_data = [{'value': s.stress, 'date': s.date.isoformat()}
+                       for s in ss.query(Stress).filter_by(owner_id=user.id)]
+        return jsonify(stress_data)

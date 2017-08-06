@@ -3,3 +3,7 @@ username=
 password=
 host=
 dbname=gestion
+
+[fitbit]
+client_id=
+client_secret=

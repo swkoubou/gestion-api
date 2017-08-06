@@ -1,4 +1,4 @@
-from sqlalchemy import (Column, Integer, String, Boolean,
+from sqlalchemy import (Column, Integer, String, Boolean, Float,
                         Date, DateTime, ForeignKey)
 from sqlalchemy.orm import relation
 from gestion.database import Base
@@ -27,7 +27,7 @@ class User(Base):
     password = Column(String(200), nullable=False)
     token = Column(String(200), nullable=False, unique=True)
     fitbit_id = Column(String(50), nullable=False)
-    fitbit_access_token = Column(String(200), nullable=False)
+    fitbit_access_token = Column(String(500), nullable=False)
     fitbit_refresh_token = Column(String(200), nullable=False)
     group_id = Column(Integer, ForeignKey('groups.id'))
     permission_id = Column(Integer, ForeignKey('permissions.id'))
@@ -54,11 +54,11 @@ class Stress(Base):
 
     id = Column(Integer, primary_key=True)
     date = Column(Date, nullable=False)
-    stress = Column(Boolean, nullable=False)
+    stress = Column(Float, nullable=False)
     owner_id = Column(Integer, ForeignKey('users.id'))
 
     def __repr__(self):
-        return f'<Stress (id:{self.id} stress?:{self.stress})>'
+        return f'<Stress (id:{self.id} stress:{self.stress})>'
 
 
 class AttendanceRecord(Base):
