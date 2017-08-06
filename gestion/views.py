@@ -107,6 +107,8 @@ class GroupListAPI(MethodView):
         ss.commit()
         admin.token = Token.generate(admin.id, admin.group_id)
         ss.commit()
+        # commit()後一度オブジェクトを参照しないとvars()で表示できない??
+        print('add', new_user.first_name)
         user = vars(user)
         del user['_sa_instance_state']
         del user['permission_id']
