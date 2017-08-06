@@ -4,6 +4,9 @@ from gestion.views.authorize import AuthorizeSigninAPI, AuthorizeSignoutAPI
 from gestion.views.groups import GroupAPI, GroupListAPI
 from gestion.views.users import UserAPI, UserListAPI, UserMeAPI
 from gestion.views.stress import StressAPI, StressMeAPI
+from gestion.views.attendance_records import (
+    WalkEnterAPI,
+)
 
 
 app = Flask(__name__)
@@ -83,6 +86,9 @@ app.add_url_rule('/users/me',
 app.add_url_rule('/users/<int:user_id>',
                  view_func=UserAPI.as_view('users_list'),
                  methods=['GET', 'PUT', 'DELETE'])
+app.add_url_rule('/users/me/work/enter',
+                 view_func=WalkEnterAPI.as_view('work_enter'),
+                 methods=['POST'])
 app.add_url_rule('/users/me/stress',
                  view_func=StressMeAPI.as_view('stress_me'),
                  methods=['GET',])

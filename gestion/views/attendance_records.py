@@ -14,15 +14,21 @@ class WalkEnterAPI(MethodView):
     def post(self):
         """出勤."""
         user = check_authorize()
+        latest_record = (ss.query(AttendanceRecord)
+                         .filter_by(owner_id=user.id)
+                         .order_by(AttendanceRecord.id.desc()).first())
+        if latest_record is not None and latest_record.end is None:
+            abort(409, "既に出勤しています")
         record = AttendanceRecord(
             begin=datetime.datetime.now(),
-            own_id=user.id
+            owner_id=user.id
         )
         ss.add(record)
         ss.commit()
         print('go to walk at %s' % record.begin)
         record = vars(record)
-        del record['own_id']
+        del record['_sa_instance_state']
+        del record['owner_id']
         return jsonify(record)
 
 
