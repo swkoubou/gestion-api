@@ -1,4 +1,4 @@
-from sqlalchemy import (Column, Integer, String, Boolean,
+from sqlalchemy import (Column, Integer, String, Boolean, Float,
                         Date, DateTime, ForeignKey)
 from sqlalchemy.orm import relation
 from gestion.database import Base
@@ -54,11 +54,11 @@ class Stress(Base):
 
     id = Column(Integer, primary_key=True)
     date = Column(Date, nullable=False)
-    stress = Column(Boolean, nullable=False)
+    stress = Column(Float, nullable=False)
     owner_id = Column(Integer, ForeignKey('users.id'))
 
     def __repr__(self):
-        return f'<Stress (id:{self.id} stress?:{self.stress})>'
+        return f'<Stress (id:{self.id} stress:{self.stress})>'
 
 
 class AttendanceRecord(Base):
