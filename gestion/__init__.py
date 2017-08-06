@@ -95,6 +95,9 @@ app.add_url_rule('/users/me/work/exit',
 app.add_url_rule('/users/me/attendance_records',
                  view_func=AttendanceRecordMe.as_view('attendance_records_me'),
                  methods=['GET'])
+app.add_url_rule('/users/<int:user_id>/attendance_records',
+                 view_func=AttendanceRecordList.as_view('attendance_record_list'),
+                 methods=['GET'])
 app.add_url_rule('/users/me/stress',
                  view_func=StressMeAPI.as_view('stress_me'),
                  methods=['GET',])
