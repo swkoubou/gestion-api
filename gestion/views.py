@@ -25,7 +25,7 @@ def check_authorize():
 
     # トークンの照合
     user = ss.query(User).filter_by(id=user_id, group_id=group_id).first()
-    if user.token != access_token:
+    if user is None or user.token != access_token:
         abort(401, '認証に失敗しました')
     else:
         return user
@@ -257,7 +257,18 @@ class UserAPI(MethodView):
     """/users/<int:user_id>"""
     def get(self, user_id):
         """ユーザ情報の取得."""
-        pass
+        own = check_authorize()
+        user = ss.query(User).filter_by(id=user_id, group_id=own.group_id).first()
+        if user is None: abort(404)
+        user = vars(user)
+        del user['_sa_instance_state']
+        del user['permission_id']
+        del user['password']
+        del user['token']
+        del user['fitbit_id']
+        del user['fitbit_access_token']
+        del user['fitbit_refresh_token']
+        return jsonify(user)
 
     def put(self, user_id):
         """ユーザ情報の更新."""
