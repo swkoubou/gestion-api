@@ -214,7 +214,12 @@ class UserMeAPI(MethodView):
     """/users/me"""
     def get(self):
         """ユーザ情報の取得(自分)."""
-        pass
+        user = check_authorize()
+        user = vars(user)
+        del user['_sa_instance_state']
+        del user['permission_id']
+        del user['password']
+        return jsonify(user)
 
     def put(self):
         """ユーザ情報の更新(自分)."""
