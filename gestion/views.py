@@ -247,7 +247,10 @@ class UserMeAPI(MethodView):
 
     def delete(self):
         """ユーザの削除(自分)."""
-        pass
+        user = check_authorize()
+        ss.delete(user)
+        ss.commit()
+        return jsonify(message='Good Bye!')
 
 
 class UserAPI(MethodView):
