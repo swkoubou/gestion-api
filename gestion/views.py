@@ -56,16 +56,11 @@ class AuthorizeSigninAPI(MethodView):
         if user is None: abort(404)
         if not check_password_hash(user.password, rq.form['password']):
             abort(401)
-        return jsonify({
-            'id': user.id, 'email': user.email,
-            'first_name': user.first_name, 'last_name': user.last_name,
-            'gender': user.gender, 'access_token': user.token,
-            'group_id': user.group_id, 'fitbit': {
-                'fitbit_id': user.fitbit_id,
-                'access_token': user.fitbit_access_token,
-                'refresh_token': user.fitbit_refresh_token,
-            }
-        })
+        user = vars(user)
+        del user['_sa_instance_state']
+        del user['permission_id']
+        del user['password']
+        return jsonify(user)
 
 
 class AuthorizeSignoutAPI(MethodView):
@@ -112,20 +107,14 @@ class GroupListAPI(MethodView):
         ss.commit()
         admin.token = Token.generate(admin.id, admin.group_id)
         ss.commit()
+        user = vars(user)
+        del user['_sa_instance_state']
+        del user['permission_id']
+        del user['password']
         return jsonify({
             'group': {'id': group.id, 'name': group.name},
-            'user': {
-                'id': admin.id, 'email': admin.email,
-                'first_name': admin.first_name, 'last_name': admin.last_name,
-                'gender': admin.gender, 'access_token': admin.token,
-                'group_id': admin.group_id,
-                'fitbit': {
-                    'fitbit_id': admin.fitbit_id,
-                    'access_token': admin.fitbit_access_token,
-                    'refresh_token': admin.fitbit_refresh_token,
-                }
-            }
-        })
+            'user': user,
+            })
 
 
 class GroupAPI(MethodView):
@@ -178,6 +167,9 @@ class UserListAPI(MethodView):
             del u['password']
             del u['permission_id']
             del u['token']
+            del u['fitbit_id']
+            del u['fitbit_access_token']
+            del u['fitbit_refresh_token']
             users.append(u)
         return jsonify(users)
     
@@ -206,6 +198,9 @@ class UserListAPI(MethodView):
         del new_user['_sa_instance_state']
         del new_user['password']
         del new_user['permission_id']
+        del new_user['fitbit_id']
+        del new_user['fitbit_access_token']
+        del new_user['fitbit_refresh_token']
         del new_user['token']
         return jsonify(new_user)
 
