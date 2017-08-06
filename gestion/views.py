@@ -2,7 +2,7 @@ from flask import request as rq
 from flask import abort, jsonify
 from flask.views import MethodView
 from werkzeug.security import generate_password_hash, check_password_hash
-from gestion.models import Group, User, Permission
+from gestion.models import Group, User, Permission, Stress
 from gestion.database import session as ss
 from gestion.utils import Token
 
@@ -279,3 +279,13 @@ class UserAPI(MethodView):
         ss.delete(user)
         ss.commit()
         return jsonify(message='Good Bye!')
+
+
+class StressMeAPI(MethodView):
+    """/users/me/stress"""
+    def get(self):
+        """自分のストレス値一覧の取得."""
+        user = check_authorize()
+        stress_data = [{'value': s.stress, 'date': s.date.isoformat()}
+                       for s in ss.query(Stress).filter_by(owner_id=user.id)]
+        return jsonify(stress_data)
