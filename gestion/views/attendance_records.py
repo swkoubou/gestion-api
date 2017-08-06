@@ -55,8 +55,11 @@ class AttendanceRecordMe(MethodView):
     """/users/me/attendance_records"""
     def get(self):
         """自分の勤務時間一覧の取得."""
-        pass
-
+        user = check_authorize()
+        records = [{'id': r.id, 'begin': r.begin, 'end': r.end}
+                   for r in (ss.query(AttendanceRecord)
+                             .filter_by(owner_id=user.id))]
+        return jsonify(records)
 
 class AttendanceRecordList(MethodView):
     """/users/<int:user_id>/attendance_records"""
