@@ -27,8 +27,9 @@ def check_authorize():
 
 
 class AuthorizeSigninAPI(MethodView):
-    """サインイン."""
+    """/authorize/signin"""
     def post(self):
+        """サインイン."""
         if set(rq.form) != {'group_name', 'email', 'password'}: abort(400)
         user = ss.query(User).filter_by(email=rq.form['email']).first()
         if user is None: abort(404)
@@ -47,8 +48,9 @@ class AuthorizeSigninAPI(MethodView):
 
 
 class AuthorizeSignoutAPI(MethodView):
-    """サインアウト."""
+    """/authorize/signout"""
     def post(self):
+        """サインアウト."""
         user = check_authorize()
         token = Token(user.token)
         token.update()
@@ -58,6 +60,7 @@ class AuthorizeSignoutAPI(MethodView):
 
 
 class GroupListAPI(MethodView):
+    """/groups"""
     def get(self):
         """グループ一覧取得."""
         groups = [{'id': g.id, 'name': g.name} for g in ss.query(Group)]
@@ -105,6 +108,7 @@ class GroupListAPI(MethodView):
 
 
 class GroupAPI(MethodView):
+    """/groups/<str:group_name>"""
     def get(self, group_name):
         """グループ情報の取得."""
         group = ss.query(Group).filter(Group.name==group_name).first()
