@@ -139,3 +139,44 @@ class GroupAPI(MethodView):
         ss.delete(group)
         ss.commit()
         return jsonify(message='Good Bye!')
+
+
+class UserListAPI(MethodView):
+    """/users"""
+    def get(self):
+        """ユーザ一覧の取得."""
+        pass
+    
+    def post(self):
+        """ユーザの追加."""
+        pass
+
+
+class UserMeAPI(MethodView):
+    """/users/me"""
+    def get(self):
+        """ユーザ情報の取得(自分)."""
+        pass
+
+    def put(self):
+        """ユーザ情報の更新(自分)."""
+        pass
+
+    def delete(self):
+        """ユーザの削除(自分)."""
+        pass
+
+
+class UserAPI(MethodView):
+    """/users/<int:user_id>"""
+    def get(self, user_id):
+        """ユーザ情報の取得."""
+        pass
+
+    def put(self, user_id):
+        """ユーザ情報の更新."""
+        pass
+
+    def delete(self, user_id):
+        """ユーザの削除."""
+        pass
