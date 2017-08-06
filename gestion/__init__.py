@@ -1,7 +1,8 @@
 from flask import Flask, jsonify
 from gestion.database import session, init_database
 from gestion.views import (
-    AuthorizeSigninAPI, AuthorizeSignoutAPI, GroupListAPI, GroupAPI
+    AuthorizeSigninAPI, AuthorizeSignoutAPI, GroupListAPI, GroupAPI,
+    UserMeAPI, UserListAPI, UserAPI,
 )
 
 
@@ -72,4 +73,13 @@ app.add_url_rule('/groups',
                  methods=['GET', 'POST',])
 app.add_url_rule('/groups/<group_name>', 
                  view_func=GroupAPI.as_view('groups'),
+                 methods=['GET', 'PUT', 'DELETE'])
+app.add_url_rule('/users', 
+                 view_func=UserListAPI.as_view('users'),
+                 methods=['GET', 'POST'])
+app.add_url_rule('/users/me', 
+                 view_func=UserMeAPI.as_view('users_me'),
+                 methods=['GET', 'PUT', 'DELETE'])
+app.add_url_rule('/users/<int:user_id>', 
+                 view_func=UserAPI.as_view('users_list'),
                  methods=['GET', 'PUT', 'DELETE'])
