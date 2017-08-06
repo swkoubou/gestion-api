@@ -36,7 +36,19 @@ class WalkExitAPI(MethodView):
     """/users/me/exit"""
     def post(self):
         """退勤."""
-        pass
+        user = check_authorize()
+        latest_record = (ss.query(AttendanceRecord)
+                         .filter_by(owner_id=user.id)
+                         .order_by(AttendanceRecord.id.desc()).first())
+        if latest_record is None or latest_record.end is not None:
+            abort(409, "既に退勤しています")
+        latest_record.end = datetime.datetime.now()
+        ss.commit()
+        print('check out at %s' % latest_record.end)
+        latest_record = vars(latest_record)
+        del latest_record['_sa_instance_state']
+        del latest_record['owner_id']
+        return jsonify(latest_record)
 
 
 class AttendanceRecordMe(MethodView):

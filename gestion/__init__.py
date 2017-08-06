@@ -5,7 +5,7 @@ from gestion.views.groups import GroupAPI, GroupListAPI
 from gestion.views.users import UserAPI, UserListAPI, UserMeAPI
 from gestion.views.stress import StressAPI, StressMeAPI
 from gestion.views.attendance_records import (
-    WalkEnterAPI,
+    WalkEnterAPI, WalkExitAPI,
 )
 
 
@@ -88,6 +88,9 @@ app.add_url_rule('/users/<int:user_id>',
                  methods=['GET', 'PUT', 'DELETE'])
 app.add_url_rule('/users/me/work/enter',
                  view_func=WalkEnterAPI.as_view('work_enter'),
+                 methods=['POST'])
+app.add_url_rule('/users/me/work/exit',
+                 view_func=WalkExitAPI.as_view('work_exit'),
                  methods=['POST'])
 app.add_url_rule('/users/me/stress',
                  view_func=StressMeAPI.as_view('stress_me'),
