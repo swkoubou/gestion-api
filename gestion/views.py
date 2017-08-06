@@ -149,7 +149,16 @@ class UserListAPI(MethodView):
     """/users"""
     def get(self):
         """ユーザ一覧の取得."""
-        pass
+        user = check_authorize()
+        users = []
+        for u in ss.query(User).filter_by(group_id=user.group_id):
+            u = vars(u)
+            del u['_sa_instance_state']
+            del u['password']
+            del u['permission_id']
+            del u['token']
+            users.append(u)
+        return jsonify(users)
     
     def post(self):
         """ユーザの追加."""
