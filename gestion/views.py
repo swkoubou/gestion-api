@@ -108,14 +108,14 @@ class GroupListAPI(MethodView):
         admin.token = Token.generate(admin.id, admin.group_id)
         ss.commit()
         # commit()後一度オブジェクトを参照しないとvars()で表示できない??
-        print('add', new_user.first_name)
-        user = vars(user)
-        del user['_sa_instance_state']
-        del user['permission_id']
-        del user['password']
+        print('add', admin.first_name)
+        admin = vars(admin)
+        del admin['_sa_instance_state']
+        del admin['permission_id']
+        del admin['password']
         return jsonify({
             'group': {'id': group.id, 'name': group.name},
-            'user': user,
+            'admin': admin,
             })
 
 
