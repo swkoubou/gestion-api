@@ -120,7 +120,29 @@ class UserAPI(MethodView):
 
     def put(self, user_id):
         """ユーザ情報の更新."""
-        pass
+        admin = check_authorize_admin()
+        user = ss.query(User).filter_by(id=user_id, group_id=admin.group_id).first()
+        if user is None: abort(404)
+        if 'email' in rq.form:
+            query = ss.query(User).filter_by(email=rq.form['email'])
+            if query.count() > 0: abort(409, 'そのメールアドレスは既に使われています')
+            else: user.email = rq.form['email']
+        if 'first_name' in rq.form: user.first_name = rq.form['first_name']
+        if 'last_name' in rq.form: user.last_name = rq.form['last_name']
+        if 'gender' in rq.form: user.gender = rq.form['gender']
+        if 'password' in rq.form: user.password = rq.form['password']
+        if 'fitbit_id' in rq.form: user.fitbit_id = rq.form['fitbit_id']
+        if 'fitbit_access_token' in rq.form: user.fitbit_access_token = rq.form['fitbit_access_token']
+        if 'fitbit_refresh_token' in rq.form: user.fitbit_refresh_token = rq.form['fitbit_refresh_token']
+        if ss.dirty: ss.commit()
+        # commit()後一度オブジェクトを参照しないとvars()で表示できない??
+        print('change', user.first_name)
+        user = vars(user)
+        del user['_sa_instance_state']
+        del user['permission_id']
+        del user['password']
+        del user['token']
+        return jsonify(user)
 
     def delete(self, user_id):
         """ユーザの削除."""
