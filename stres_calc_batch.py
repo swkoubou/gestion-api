@@ -40,9 +40,10 @@ crawl_date = date(year, month, day)
 for user in session.query(User):
     # fitbitアカウントが登録されていない場合と、既に同じ日にちのデータが
     # 取得されている場合はクロールしない
-    if user.fitbit_access_token == '' or not (session.query(Stress)
-                                               .filter_by(owner_id=user.id,
-                                                          date=crawl_date)):
+    if user.fitbit_access_token == '' or (session.query(Stress)
+                                          .filter_by(owner_id=user.id,
+                                                     date=crawl_date)
+                                          .first()):
         continue
     resource_url = f'https://api.fitbit.com/1/user/{user.fitbit_id}/activities/heart/date/{crawl_date.isoformat()}/1d/1sec/time/00:00/23:59.json'
     r = requests.get(resource_url, headers={
@@ -52,11 +53,19 @@ for user in session.query(User):
         print('success')
         data = r.json()['activities-heart-intraday']['dataset']
         heart_rate = numpy.array([datum['value'] for datum in data])
-        stress_val = float(stress_calc_package.calc(heart_rate))
+        try:
+            stress_val = float(stress_calc_package.calc(heart_rate))
+        except:
+            stress_val = 0
         print(stress_val)
-        stress = Stress(date=date.today(), stress=stress_val, owner_id=user.id)
-        session.add(stress)
-        session.commit()
+        try:
+            # stress_calc_package()の返り値の型が不定で、nanを判定できないので
+            # DBにデータを入れるときにnot null制約に引っかかるのをハンドリングする
+            stress = Stress(date=crawl_date, stress=stress_val, owner_id=user.id)
+            session.add(stress)
+            session.commit()
+        except Exception:
+            session.rollback()
     else:
         print(f'failued code: {r.status_code}')
         print(r.text)
