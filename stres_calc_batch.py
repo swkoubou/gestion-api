@@ -52,11 +52,19 @@ for user in session.query(User):
         print('success')
         data = r.json()['activities-heart-intraday']['dataset']
         heart_rate = numpy.array([datum['value'] for datum in data])
-        stress_val = float(stress_calc_package.calc(heart_rate))
+        try:
+            stress_val = float(stress_calc_package.calc(heart_rate))
+        except:
+            stress_val = 0
         print(stress_val)
-        stress = Stress(date=date.today(), stress=stress_val, owner_id=user.id)
-        session.add(stress)
-        session.commit()
+        try:
+            # stress_calc_package()の返り値の型が不定で、nanを判定できないので
+            # DBにデータを入れるときにnot null制約に引っかかるのをハンドリングする
+            stress = Stress(date=crawl_date.today(), stress=stress_val, owner_id=user.id)
+            session.add(stress)
+            session.commit()
+        except Exception:
+            session.rollback()
     else:
         print(f'failued code: {r.status_code}')
         print(r.text)
