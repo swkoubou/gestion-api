@@ -4,8 +4,10 @@ import configparser, os
 import requests
 import pandas, numpy
 import base64
+import argparse
 import stress_calc_package
 from datetime import date
+
 
 BASE_DIR = os.path.abspath('.')
 
@@ -21,12 +23,28 @@ try:
 except KeyError as err:
     print(f'設定 {err} が見つかりません。追加してください。')
 
+##### コマンドライン引数の処理 #####
+# 日付の指定によってクロールするデータの日付を変える
+parser = argparse.ArgumentParser()
+parser.add_argument('-y', '--year', type=int, help='年の指定')
+parser.add_argument('-m', '--month', type=int, help='月の指定')
+parser.add_argument('-d', '--day', type=int, help='日の指定')
+args = parser.parse_args()
+
+year = args.year if args.year else date.today().year
+month = args.month if args.month else date.today().month
+day = args.day if args.day else date.today().day
+crawl_date = date(year, month, day)
 
 ##### ユーザ毎にデータを収集してストレス値の計算 #####
 for user in session.query(User):
-    if user.fitbit_access_token == '':
+    # fitbitアカウントが登録されていない場合と、既に同じ日にちのデータが
+    # 取得されている場合はクロールしない
+    if user.fitbit_access_token == '' or not (session.query(Stress)
+                                               .filter_by(owner_id=user.id,
+                                                          date=crawl_date)):
         continue
-    resource_url = f'https://api.fitbit.com/1/user/{user.fitbit_id}/activities/heart/date/2017-01-28/1d/1sec/time/00:00/23:59.json'
+    resource_url = f'https://api.fitbit.com/1/user/{user.fitbit_id}/activities/heart/date/{crawl_date.isoformat()}/1d/1sec/time/00:00/23:59.json'
     r = requests.get(resource_url, headers={
         'Authorization': 'Bearer ' + user.fitbit_access_token,
     })
@@ -40,4 +58,5 @@ for user in session.query(User):
         session.add(stress)
         session.commit()
     else:
-        print('failued')
+        print(f'failued code: {r.status_code}')
+        print(r.text)
