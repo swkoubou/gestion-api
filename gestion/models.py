@@ -29,24 +29,14 @@ class User(Base):
     fitbit_id = Column(String(50), nullable=False)
     fitbit_access_token = Column(String(500), nullable=False)
     fitbit_refresh_token = Column(String(200), nullable=False)
+    permission = Column(String(10), nullable=False)
     group_id = Column(Integer, ForeignKey('groups.id'))
-    permission_id = Column(Integer, ForeignKey('permissions.id'))
 
     stress_data = relation('Stress', backref='stress_data')
     attendance_records = relation('AttendanceRecord', backref='attendance_records')
 
     def __repr__(self):
         return f'<User (id:{self.id} name:{self.email})>'
-
-
-class Permission(Base):
-    __tablename__ = 'permissions'
-
-    id = Column(Integer, primary_key=True)
-    name = Column(String(10), nullable=False)
-
-    def __repr__(self):
-        return f'<Permission (id:{self.id} name:{self.name})>'
 
 
 class Stress(Base):

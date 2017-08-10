@@ -2,7 +2,7 @@ from flask import request as rq
 from flask import abort, jsonify
 from flask.views import MethodView
 from werkzeug.security import generate_password_hash, check_password_hash
-from gestion.models import Group, User, Permission, Stress
+from gestion.models import Group, User, Stress
 from gestion.database import session as ss
 from gestion.utils import Token
 from gestion.views.check_authorize import check_authorize, check_authorize_admin

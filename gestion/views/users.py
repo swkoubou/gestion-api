@@ -2,7 +2,7 @@ from flask import request as rq
 from flask import abort, jsonify
 from flask.views import MethodView
 from werkzeug.security import generate_password_hash, check_password_hash
-from gestion.models import Group, User, Permission, Stress
+from gestion.models import Group, User, Stress
 from gestion.database import session as ss
 from gestion.utils import Token
 from gestion.views.check_authorize import check_authorize, check_authorize_admin
@@ -18,7 +18,6 @@ class UserListAPI(MethodView):
             u = vars(u)
             del u['_sa_instance_state']
             del u['password']
-            del u['permission_id']
             del u['token']
             del u['fitbit_id']
             del u['fitbit_access_token']
@@ -33,14 +32,13 @@ class UserListAPI(MethodView):
                             'gender', 'password'}: abort(400)
         query = ss.query(User).filter_by(email=rq.form['email'])
         if query.count() > 0: abort(409, 'そのメールアドレスは既に使われています')
-        permission = ss.query(Permission).filter(Permission.name=='user').first()
         new_user = User(email=rq.form['email'], first_name=rq.form['first_name'],
                         last_name=rq.form['last_name'], gender=rq.form['gender'],
                         password=generate_password_hash(rq.form['password']),
                         # user_idが決まらないとアクセストークンが作れないのでダミーを入れる
                         token=Token.generate(0, 0),
                         fitbit_id='', fitbit_access_token='', fitbit_refresh_token='',
-                        permission_id=permission.id, group_id=admin.group_id)
+                        permission='user', group_id=admin.group_id)
         ss.add(new_user)
         ss.commit()
         new_user.token = Token.generate(new_user.id, new_user.group_id)
@@ -50,7 +48,6 @@ class UserListAPI(MethodView):
         new_user = vars(new_user)
         del new_user['_sa_instance_state']
         del new_user['password']
-        del new_user['permission_id']
         del new_user['fitbit_id']
         del new_user['fitbit_access_token']
         del new_user['fitbit_refresh_token']
@@ -65,7 +62,6 @@ class UserMeAPI(MethodView):
         user = check_authorize()
         user = vars(user)
         del user['_sa_instance_state']
-        del user['permission_id']
         del user['password']
         return jsonify(user)
 
@@ -88,7 +84,6 @@ class UserMeAPI(MethodView):
         print('add', user.first_name)
         user = vars(user)
         del user['_sa_instance_state']
-        del user['permission_id']
         del user['password']
         return jsonify(user)
 
@@ -110,7 +105,6 @@ class UserAPI(MethodView):
         if user is None: abort(404)
         user = vars(user)
         del user['_sa_instance_state']
-        del user['permission_id']
         del user['password']
         del user['token']
         del user['fitbit_id']
@@ -139,7 +133,6 @@ class UserAPI(MethodView):
         print('change', user.first_name)
         user = vars(user)
         del user['_sa_instance_state']
-        del user['permission_id']
         del user['password']
         del user['token']
         return jsonify(user)

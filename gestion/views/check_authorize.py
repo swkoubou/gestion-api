@@ -1,7 +1,7 @@
 from flask import request as rq
 from flask import abort, jsonify
 from gestion.database import session as ss
-from gestion.models import User, Permission
+from gestion.models import User
 from gestion.utils import Token
 
 
@@ -22,8 +22,10 @@ def check_authorize():
         abort(400, '正しいAuthorizationヘッダが必要です')
 
     # トークンの照合
-    user = ss.query(User).filter_by(id=user_id, group_id=group_id).first()
-    if user is None or user.token != access_token:
+    user = (ss.query(User)
+            .filter_by(id=user_id, group_id=group_id, token=access_token)
+            .first()) # 万一重複があった場合の処理が必要？
+    if not user:
         abort(401, '認証に失敗しました')
     else:
         return user
@@ -37,9 +39,11 @@ def check_authorize_admin():
         abort(400, '正しいAuthorizationヘッダが必要です')
 
     # トークンの照合
-    admin = ss.query(User).filter_by(id=user_id, group_id=group_id).first()
-    permission = ss.query(Permission).filter(Permission.name=='admin').first()
-    if admin.token != access_token or admin.permission_id != permission.id:
+    admin = (ss.query(User)
+             .filter_by(id=user_id, group_id=group_id,
+                        token=access_token, permission='admin')
+             .first())
+    if not admin:
         abort(401, '認証に失敗しました')
     else:
         return admin
