@@ -22,8 +22,10 @@ def check_authorize():
         abort(400, '正しいAuthorizationヘッダが必要です')
 
     # トークンの照合
-    user = ss.query(User).filter_by(id=user_id, group_id=group_id).first()
-    if user is None or user.token != access_token:
+    user = (ss.query(User)
+            .filter_by(id=user_id, group_id=group_id, token=access_token)
+            .first()) # 万一重複があった場合の処理が必要？
+    if not user:
         abort(401, '認証に失敗しました')
     else:
         return user
@@ -37,9 +39,10 @@ def check_authorize_admin():
         abort(400, '正しいAuthorizationヘッダが必要です')
 
     # トークンの照合
-    admin = ss.query(User).filter_by(id=user_id,
-                                     group_id=group_id,
-                                     permission='admin').first()
+    admin = (ss.query(User)
+             .filter_by(id=user_id, group_id=group_id,
+                        token=access_token, permission='admin')
+             .first())
     if not admin:
         abort(401, '認証に失敗しました')
     else:
