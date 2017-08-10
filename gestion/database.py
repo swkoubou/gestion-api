@@ -35,8 +35,3 @@ def init_database():
     # you will have to import them first before calling init_db()
     import gestion.models
     Base.metadata.create_all(bind=engine)
-    session.add_all([
-        gestion.models.Permission(name='user'),
-        gestion.models.Permission(name='admin'),
-    ])
-    session.commit()

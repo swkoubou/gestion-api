@@ -19,7 +19,6 @@ class AuthorizeSigninAPI(MethodView):
             abort(401)
         user = vars(user)
         del user['_sa_instance_state']
-        del user['permission_id']
         del user['password']
         return jsonify(user)
 
